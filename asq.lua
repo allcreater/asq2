@@ -117,21 +117,4 @@ function asq.sort(iterator, sortCriteria)
     return setmetatable(resIterator, asq.metatable)
 end
 
-local test = {
-    vasya = 125,
-    petya = 10,
-    vika = 83,
-    oleg = 113,
-    katya = 3
-}
-
---local a = asq.map(test, function (k,v) return k .. k, v, v * v end)
-
-print("test...")
-for k,v,vv in asq.pairs(test)
-                    :map (function (k,v) return k .. k, v, v*v end) 
-                    :map (function (k,v,vv) return k, vv, v end)
-                    :sort (function (k,v,vv) return vv end)
-                    do
-    print(k,v,vv)
-end
+return asq
