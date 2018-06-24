@@ -74,6 +74,48 @@ function asq.map(iterator, mapping)
     return setmetatable(resIterator, asq.metatable)
 end
 
+function asq.sort(iterator, sortCriteria)
+    assert(getmetatable(iterator) == asq.metatable)
+
+    local resIterator = {
+        next = function(self)
+            print("sorting...")
+
+            self.sortedList = {}
+            while true do
+                local results = {iterator()}
+
+                if results[1] then
+                    results.criteria = (sortCriteria(table.unpack(results)))
+                    table.insert(self.sortedList, results)
+                else
+                    break
+                end
+            end
+
+            local sortfunction = function(a, b)
+                return a.criteria < b.criteria
+            end
+
+            table.sort( self.sortedList, sortfunction )
+            
+            local index = 1
+            self.next = function()
+                local v = self.sortedList[index]
+                if v then
+                    index = index + 1
+                    return table.unpack(v)
+                else
+                    return
+                end
+            end
+
+            return self.next()
+        end
+    }
+
+    return setmetatable(resIterator, asq.metatable)
+end
 
 local test = {
     vasya = 125,
@@ -89,6 +131,7 @@ print("test...")
 for k,v,vv in asq.pairs(test)
                     :map (function (k,v) return k .. k, v, v*v end) 
                     :map (function (k,v,vv) return k, vv, v end)
+                    :sort (function (k,v,vv) return vv end)
                     do
     print(k,v,vv)
 end
