@@ -117,4 +117,36 @@ function asq.sort(iterator, sortCriteria)
     return setmetatable(resIterator, asq.metatable)
 end
 
+-- even if iterator returns tuples only first argument will be folded.
+function asq.fold (iterator, func, accum)
+    assert(getmetatable(iterator) == asq.metatable)
+    assert(func and type(func) == "function")
+    
+    local value
+    while true do
+        value = iterator()
+
+        if value then
+            print(value)
+            accum = func(accum, value)
+        else
+            break
+        end
+    end
+
+    return accum
+end
+
+function asq.where (iterator, predicate)
+    assert(getmetatable(iterator) == asq.metatable)
+
+    local resIterator = {
+        next = function(self)
+            
+        end
+    }
+
+    return setmetatable(resIterator, asq.metatable)
+end
+
 return asq
