@@ -127,7 +127,6 @@ function asq.fold (iterator, func, accum)
         value = iterator()
 
         if value then
-            print(value)
             accum = func(accum, value)
         else
             break
@@ -139,14 +138,38 @@ end
 
 function asq.where (iterator, predicate)
     assert(getmetatable(iterator) == asq.metatable)
+    assert(predicate and type(predicate) == "function")
 
     local resIterator = {
         next = function(self)
+
+            local results
+            repeat
+                results = {iterator()}
+
+                if not results[1] then
+                    break
+                end
+            until predicate(table.unpack(results))
             
+            return table.unpack(results)
         end
     }
 
     return setmetatable(resIterator, asq.metatable)
+end
+
+function asq.first (iterator, predicate)
+    local results
+    repeat
+        results = {iterator()}
+
+        if not results[1] then
+            return
+        end
+    until predicate(table.unpack(results))
+
+    return table.unpack(results)
 end
 
 return asq
