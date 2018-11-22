@@ -8,6 +8,39 @@ asq.metatable = {
     end
 }
 
+--inclusive from and to
+function asq.range(fromNumber, toNumber, step)
+    assert (type(fromNumber) == "number" and type(toNumber) == "number")
+
+    step = step or 1
+    local numberOfIterations = (toNumber - fromNumber)/step
+
+    assert (numberOfIterations >= 0 )
+
+    local value, counter = fromNumber, 0
+
+    local iterator = {
+        reset = function()
+            value = fromNumber
+            counter = 0
+        end,
+
+        next = function()
+            if counter <= numberOfIterations then
+                counter = counter + 1
+                local prevValue = value
+                value = value + step
+
+                return prevValue
+            else
+                return nil
+            end
+        end
+    }
+
+    return setmetatable(iterator, asq.metatable)
+end
+
 -- @brief transforms source table into sequence (iterator)
 -- @return sequence of key/value pairs. Iterator is compatible with range-based for loop
 function asq.pairs(sourceTable)
@@ -195,16 +228,48 @@ function asq.first (iterator, predicate)
 
     return table.unpack(results)
 end
+    
+function asq.skip (iterator, n)
+    local skipped = 0
 
--- @brief gathers all sequence values into list table
+    --TODO: make it delayed?
+    repeat
+        k = iterator()
+        skipped = skipped + 1
+    until not k or skipped >= n
+
+    return iterator
+end
+
+function asq.zip(iterator1, iterator2, func)
+    assert(getmetatable(iterator1) == asq.metatable)
+    assert(getmetatable(iterator2) == asq.metatable)
+    assert(func and type(func) == "function")
+
+    local resIterator = {
+        next = function(self)
+            local results1, results2 = {iterator1()}, {iterator2()}
+
+            if not results1[1] or not results2[1] then
+                return
+            end
+
+            return func (results1, results2)
+        end
+    }
+
+    return setmetatable(resIterator, asq.metatable)
+end
+
+-- @brief gathers all sequence values into list table. Discards all iterator results except first.
 -- @param iterator
--- @return {1 = {...}, 2 = {...}, ..., n = {...}}
+-- @return {1 = v1, 2 = v2, ..., n = vn}
 function asq.toList(iterator)
     local list = {}
     while true do
-        local result = {iterator()}
-        if result[1] then
-            table.insert( list, result)
+        local v = iterator()
+        if v then
+            table.insert( list, v)
         else
             break
         end
@@ -214,7 +279,7 @@ function asq.toList(iterator)
 end
 
 -- @brief gathers all sequence values into table
--- @param iterator - should returns key/values pairs to map on generic Lua table 
+-- @param iterator - should returns key/values pairs to map on generic Lua table. Another iterator results will be discarded.
 -- @return {k1 = v1, k2 = v2, ..., kn = vn}
 function asq.toTable(iterator)
     local resTable = {}

@@ -1,33 +1,65 @@
 asq = require("asq/asq")
 
-local test = {
-    vasya = 125,
-    petya = 10,
-    vika = 83,
-    oleg = 113,
-    katya = 3
+local students = 
+{
+    {
+        name = "Andrey",
+        age = 17,
+        department = "IT"
+    },
+    {
+        name = "Artem",
+        age = 24,
+        department = "Design"
+    },
+    {
+        name = "Olga",
+        age = 20,
+        department = "Applied math"
+    },
+    {
+        name = "Shloma",
+        age = 21,
+        department = "Applied math"
+    },
+    {
+        name = "Valeria",
+        age = 23,
+        department = "IT"
+    },
+    {
+        name = "Boris",
+        age = 25,
+        department = "Design"
+    },
+    {
+        name = "Vladlen",
+        age = 23,
+        department = "Engineering"
+    },
+    {
+        name = "Artem",
+        age = 25,
+        department = "IT"
+    }
 }
 
-local a = asq.pairs(test) : map(function (k,v) return k .. k, v, v * v end)
+local minAge = asq.values(students) : fold ( function (accum, info) return math.min(accum, info.age) end, math.huge)
+print ("Min age is", minAge)
 
-print("test...")
-for k,v,vv in a :where (function (k,v,vv) return v > 10 end)
-                :sort (function (k,v,vv) return vv end)
-                do
-    print(k,v,vv)
+
+
+print ("Ranges:")
+for v1,v2 in asq.range(1,10):zip(asq.range(2, 10), function (r1, r2) return r1[1], r2[1] end) do
+    print(v1, v2)
 end
 
-print("folding... ", asq.fold(a : map(function (k,v,vv) return v end ), function (acc, v) return math.max(acc, v) end, 0))
-print("first value > 100 is", a : first(function (k,v, vv) return v > 100 end)) --TODO: somehow reset sequence to start?
-print("second value > 100 is", a : first(function (k,v, vv) return v > 100 end)) --TODO: somehow reset sequence to start?
---  print("third value > 100 is", a : first(function (k,v, vv) return v > 100 end)) --TODO: somehow reset sequence to start?
+-- print (" ")
+-- for i in asq.range(10,1,-1) do
+--     print(i)
+-- end
 
-print("list:")
-for i,v in ipairs(a : toList()) do
-    print(i, ":", v[1], v[2], v[3])
-end
-
-print("table:")
-for k,v in pairs(a : toTable()) do
-    print(k, v)
-end
+-- print (" ")
+-- for i in asq.range(1,10,2) do
+--     print(i)
+-- end
