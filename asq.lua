@@ -112,7 +112,7 @@ function asq.map(iterator, mapping)
 
     local resIterator = {
         next = function()
-            return safeMapping(iterator())
+            return safeMapping(iterator:next())
         end
     }
 
@@ -131,7 +131,7 @@ function asq.sort(iterator, sortCriteria)
 
             self.sortedList = {}
             while true do
-                local results = {iterator()}
+                local results = {iterator:next()}
 
                 if results[1] then
                     results.criteria = (sortCriteria(table.unpack(results)))
@@ -176,7 +176,7 @@ function asq.fold (iterator, func, accum)
     
     local value
     while true do
-        value = iterator()
+        value = iterator:next()
 
         if value then
             accum = func(accum, value)
@@ -200,7 +200,7 @@ function asq.where (iterator, predicate)
 
             local results
             repeat
-                results = {iterator()}
+                results = {iterator:next()}
 
                 if not results[1] then
                     break
@@ -217,9 +217,12 @@ end
 -- @brief finds first element satisfying the condition
 -- @return v1,v2,...,vn
 function asq.first (iterator, predicate)
+    assert(getmetatable(iterator) == asq.metatable)
+    assert(predicate and type(predicate) == "function")
+
     local results
     repeat
-        results = {iterator()}
+        results = {iterator:next()}
 
         if not results[1] then
             return
@@ -230,11 +233,14 @@ function asq.first (iterator, predicate)
 end
     
 function asq.skip (iterator, n)
+    assert(getmetatable(iterator) == asq.metatable)
+    assert(predicate and type(predicate) == "function")
+
     local skipped = 0
 
     --TODO: make it delayed?
     repeat
-        k = iterator()
+        k = iterator:next()
         skipped = skipped + 1
     until not k or skipped >= n
 
@@ -248,7 +254,7 @@ function asq.zip(iterator1, iterator2, func)
 
     local resIterator = {
         next = function(self)
-            local results1, results2 = {iterator1()}, {iterator2()}
+            local results1, results2 = {iterator1:next()}, {iterator2:next()}
 
             if not results1[1] or not results2[1] then
                 return
@@ -265,6 +271,8 @@ end
 -- @param iterator
 -- @return {1 = v1, 2 = v2, ..., n = vn}
 function asq.toList(iterator)
+    --TODO: use next() instead of () if possible?
+    
     local list = {}
     while true do
         local v = iterator()
